@@ -19,7 +19,10 @@ char * get_if_name(struct ifaddrs *ifa){
 }
 
 int get_if_host(struct ifaddrs *ifa, char *host){
-	if(getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in),
+        int family = get_if_family(ifa);
+	if(getnameinfo(ifa->ifa_addr, 
+                        (family == AF_INET) ? sizeof(struct sockaddr_in) :
+                        sizeof(struct sockaddr_in6),
 			host, NI_MAXHOST,
 			NULL, 0, NI_NUMERICHOST))
 		return 0;
@@ -27,28 +30,45 @@ int get_if_host(struct ifaddrs *ifa, char *host){
 }
 
 int get_if_netmask(struct ifaddrs *ifa, char *netmask){
-	if(getnameinfo(ifa->ifa_netmask, sizeof(struct sockaddr_in),
+        int family = get_if_family(ifa);
+	if(getnameinfo(ifa->ifa_netmask, 
+                        (family == AF_INET) ? sizeof(struct sockaddr_in) :
+                        sizeof(struct sockaddr_in6),
 			netmask, NI_MAXHOST,
 			NULL, 0, NI_NUMERICHOST))
 		return 0;
 	return 1;
 }
 
-VALUE set_if_hash(VALUE rb_if_hash, char *if_name, char *if_host, char *if_netmask){
+VALUE set_if_hash(VALUE rb_if_hash, struct ifaddrs *ifa, int family){
+        char *if_host, *if_netmask, *if_name;
+        if_name = get_if_name(ifa);
+	if_host = malloc(sizeof(char) * NI_MAXHOST);
+	if (! get_if_host(ifa, if_host))
+		rb_raise(rb_eSystemCallError, "Can't get IP from %s", if_name);
 
-	VALUE rb_if_data_hash;
-	char *str_inet_name = "inet_addr";
-	char *str_netmask_name = "netmask";
+	if_netmask = malloc(sizeof(char) * NI_MAXHOST);
+	if (! get_if_netmask(ifa, if_netmask))
+		rb_raise(rb_eSystemCallError, "Can't get IP from %s", if_name);
 
-	rb_if_data_hash = rb_hash_new();
-	rb_hash_aset(rb_if_hash,
-			rb_str_intern(rb_str_new2(if_name)),
-			rb_if_data_hash);
+	char *str_inet_name = "inet_addr_v4";
+	char *str_inet_name6 = "inet_addr_v6";
+	char *str_netmask_name = "netmask_v4";
+	char *str_netmask_name6 = "netmask_v6";
+        VALUE rb_if_data_hash = rb_hash_aref(rb_if_hash, rb_str_intern(rb_str_new2(if_name)));
+
+	
+        if (rb_if_data_hash == Qnil) {
+		rb_if_data_hash = rb_hash_new();
+		rb_hash_aset(rb_if_hash,
+				rb_str_intern(rb_str_new2(if_name)),
+				rb_if_data_hash);
+       }
 	rb_hash_aset(rb_if_data_hash,
-			rb_str_intern(rb_str_new2(str_inet_name)),
+			rb_str_intern(rb_str_new2((family == AF_INET) ? str_inet_name : str_inet_name6)),
 			rb_str_new2(if_host));
 	rb_hash_aset(rb_if_data_hash,
-			rb_str_intern(rb_str_new2(str_netmask_name)),
+			rb_str_intern(rb_str_new2((family == AF_INET) ? str_netmask_name : str_netmask_name6)),
 			rb_str_new2(if_netmask));
 	return rb_if_data_hash;
 }
@@ -68,20 +88,9 @@ VALUE rb_get_ifaddrs(void)
         int family;
 
         family = get_if_family(ifa);
-        if (family == AF_INET)
+        if (family == AF_INET || family == AF_INET6)
         {
-            char *if_host, *if_netmask, *if_name;
-
-            if_name = get_if_name(ifa);
-						if_host = malloc(sizeof(char) * NI_MAXHOST);
-						if (! get_if_host(ifa, if_host))
-							rb_raise(rb_eSystemCallError, "Can't get IP from %s", if_name);
-
-						if_netmask = malloc(sizeof(char) * NI_MAXHOST);
-						if (! get_if_netmask(ifa, if_netmask))
-							rb_raise(rb_eSystemCallError, "Can't get IP from %s", if_name);
-
-						set_if_hash(rb_if_hash, if_name, if_host, if_netmask);
+  	      set_if_hash(rb_if_hash, ifa, family);  
         }
     }
     freeifaddrs(ifaddr);
