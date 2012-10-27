@@ -1,4 +1,4 @@
-# system-ifaddrs ![https://secure.travis-ci.org/bbcoimbra/system-getifaddrs.png](https://secure.travis-ci.org/bbcoimbra/system-getifaddrs.png)
+# rumblinthebronx-system-ifaddrs
 
 This lib is a wrapper for get\_ifaddrs C routine.
 
@@ -27,6 +27,7 @@ Consider test.rb below:
 require "pp"
 require "system/getifaddrs"
 pp System.get_ifaddrs
+pp System.get_ifaddrs ip_version="6"
 ```
 
 When test.rb is executed:
@@ -38,9 +39,14 @@ $ ruby test.rb
 Should return:
 
 ```ruby
-{:lo=>{:inet_addr=>"127.0.0.1", :netmask=>"255.0.0.0"}}
+{:lo=>
+  {:inet_addr_v4=>"127.0.0.1",
+   :netmask_v4=>"255.0.0.0",
+   :inet_addr_v6=>"::1",
+   :netmask_v6=>"ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"}}
+
 ```
 
 ## Copyright
 
-Copyright (c) 2010 Bruno Coimbra. See LICENSE for details.
+Copyright (c) 2011 rumblinthebronx. See LICENSE for details.

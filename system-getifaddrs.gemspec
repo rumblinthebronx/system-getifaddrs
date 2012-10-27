@@ -3,12 +3,12 @@ $:.push File.expand_path("../lib", __FILE__)
 require "system/getifaddrs/version"
 
 Gem::Specification.new do |s|
-  s.name = "system-getifaddrs"
+  s.name = "rumblinthebronx-system-getifaddrs"
   s.version = System::Getifaddrs::VERSION
   s.platform = Gem::Platform::RUBY
-  s.authors = ["Bruno Coimbra"]
-  s.email = %q{bbcoimbra@gmail.com}
-  s.homepage = %q{http://github.com/bbcoimbra/system-getifaddrs}
+  s.authors = ["Sujin Philip", "Bruno Coimbra"]
+  s.email = %q{sujin.phil@gmail.com}
+  s.homepage = %q{http://github.com/rumblinthebronx/system-getifaddrs}
   s.summary = %q{This lib is a wrapper for get_ifaddrs C routine}
   s.description = %q{This lib is a wrapper for get_ifaddrs C routine. The original routine returns a linked list that contains avaliable inet interfaces. This lib walks on list and return an hash that contains the interface names and sub-hashes with respectives ip addresses and netmasks.}
   s.add_development_dependency(%q<rspec>, "~> 1.3")
