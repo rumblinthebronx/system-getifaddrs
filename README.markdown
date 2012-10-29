@@ -27,7 +27,6 @@ Consider test.rb below:
 require "pp"
 require "system/getifaddrs"
 pp System.get_ifaddrs
-pp System.get_ifaddrs ip_version="6"
 ```
 
 When test.rb is executed:
