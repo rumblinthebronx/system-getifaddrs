@@ -4,7 +4,10 @@ Bundler::GemHelper.install_tasks
 require 'spec/rake/spectask'
 Spec::Rake::SpecTask.new
 
-require 'rake/extensiontask'
-Rake::ExtensionTask.new('rb_getifaddrs')
-
-task :default => [:compile, :spec]
+if RUBY_PLATFORM == "java"
+  task :default => [:spec]
+else
+  require 'rake/extensiontask'
+  Rake::ExtensionTask.new('rb_getifaddrs')
+  task :default => [:compile, :spec]
+end
